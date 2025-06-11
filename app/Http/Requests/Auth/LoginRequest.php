@@ -24,10 +24,10 @@ class LoginRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+   public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'username' => ['required', 'string'], // Mengganti 'email' menjadi 'username' dan menghapus validasi 'email'
             'password' => ['required', 'string'],
         ];
     }
@@ -41,11 +41,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Menggunakan 'username' dari request untuk autentikasi
+        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) { 
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                // Mengganti key pesan error ke 'username'
+                'username' => trans('auth.failed'), 
             ]);
         }
 
@@ -80,6 +82,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        // Menggunakan username dan IP untuk throttle key
+        return Str::transliterate(Str::lower($this->input('username')).'|'.$this->ip());
     }
 }
