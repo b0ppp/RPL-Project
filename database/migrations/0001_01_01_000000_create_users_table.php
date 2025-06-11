@@ -12,13 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->id('user_id'); // Kita ganti nama primary key menjadi user_id
+            $table->string('fullname', 100)->comment('Nama lengkap pengguna');
+            $table->string('username', 50)->unique()->comment('Username untuk login');
+            $table->string('email')->unique()->nullable()->comment('Email pengguna, unik dan opsional');
+            $table->timestamp('email_verified_at')->nullable(); // Bawaan Laravel, biarkan jika ingin fitur verifikasi email
+            $table->string('password')->comment('Password yang sudah di-hash'); // Nama kolom standar Laravel untuk password
+
+            // Definisikan kolom role_id di sini, TIPE DATA SAJA, TANPA FOREIGN KEY CONSTRAINT
+            $table->unsignedBigInteger('role_id')->nullable()->comment('ID untuk peran pengguna (akan dihubungkan nanti)');
+            // Kita buat nullable() sementara jika ada kasus user dibuat sebelum role_id di-set,
+            // atau Anda bisa menghapus nullable() jika role_id wajib saat user dibuat dan diisi dari seeder/controller
+
+            $table->enum('status', ['Aktif', 'Tidak Aktif'])->default('Aktif')->comment('Status akun pengguna');
             $table->rememberToken();
-            $table->timestamps();
+            $table->timestamps(); // Kolom created_at dan updated_at
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
